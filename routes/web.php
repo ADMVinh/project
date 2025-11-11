@@ -11,15 +11,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-
-
+use App\Http\Controllers\ChatbotController;
 
 Auth::routes();
 
 Route::get('/', [HomeController::class, 'index'])->name('home.index');
 Route::get('/contact-us',[HomeController::class, 'contact'])->name('home.contact');
 Route::post('/contact/store',[HomeController::class, 'contact_store'])->name('home.contact.store');
+Route::get('/about', [HomeController::class, 'about'])->name('home.about');
 
+
+Route::post('/chatbot/send', [ChatbotController::class, 'sendMessage'])->name('chatbot.send');
+Route::post('/chatbot/clear', [ChatbotController::class, 'clearHistory'])->name('chatbot.clear');
+Route::get('/chatbot/history', [ChatbotController::class, 'getHistory'])->name('chatbot.history');
+Route::get('/chatbot/quick-questions', [ChatbotController::class, 'quickQuestions'])->name('chatbot.questions');
 
 
 
@@ -60,6 +65,11 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/account-order/cancel-order', [UserController::class, 'order_cancel'])->name('user.order.cancel');
     Route::get('/user/address', [UserController::class, 'showAddress'])->name('user.address');
     Route::match(['get', 'post'], '/user/address/edit/{id}', [UserController::class, 'editAddress'])->name('user.edit.address');
+    Route::get('/review-product/{order_item_id}', [UserController::class, 'review_product'])->name('user.review.product');
+    Route::post('/review/store', [UserController::class, 'review_store'])->name('user.review.store');
+    Route::get('/my-reviews', [UserController::class, 'my_reviews'])->name('user.my.reviews');
+    Route::get('/review/{id}/edit', [UserController::class, 'review_edit'])->name('user.review.edit');
+    Route::put('/review/update', [UserController::class, 'review_update'])->name('user.review.update');
 });
 
 Route::get('forgot-password', [ForgotPasswordController::class, 'showForgotForm'])->name('password.request');
@@ -110,4 +120,20 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
 
     Route::get('/admin/contacts', [AdminController::class,'contacts'])->name('admin.contacts');
     Route::delete('/admin/contact/{id}/delete', [AdminController::class, 'contact_delete'])->name('admin.contact.delete');
+
+    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::get('/admin/user/add', [AdminController::class, 'user_add'])->name('admin.user.add');
+    Route::post('/admin/user/store', [AdminController::class, 'user_store'])->name('admin.user.store');
+    Route::get('/admin/user/{id}/details', [AdminController::class, 'user_details'])->name('admin.user.details');
+    Route::get('/admin/user/{id}/edit', [AdminController::class, 'user_edit'])->name('admin.user.edit');
+    Route::put('/admin/user/update', [AdminController::class, 'user_update'])->name('admin.user.update');
+    Route::delete('/admin/user/{id}/delete', [AdminController::class, 'user_delete'])->name('admin.user.delete');
+    Route::post('/admin/user/{id}/verify-email', [AdminController::class, 'user_verify_email'])->name('admin.user.verify.email');
+    Route::post('/admin/user/{id}/unverify-email', [AdminController::class, 'user_unverify_email'])->name('admin.user.unverify.email');
+
+    Route::get('/admin/reviews', [AdminController::class, 'reviews'])->name('admin.reviews');
+    Route::get('/admin/review/{id}/details', [AdminController::class, 'review_details'])->name('admin.review.details');
+    Route::put('/admin/review/update-status', [AdminController::class, 'review_update_status'])->name('admin.review.status.update');
+    Route::post('/admin/review/reply', [AdminController::class, 'review_reply'])->name('admin.review.reply');
+    Route::delete('/admin/review/{id}/delete', [AdminController::class, 'review_delete'])->name('admin.review.delete');
 });

@@ -200,9 +200,9 @@
                       <div class="product-card__price d-flex">
                         <span class="money price text-secondary">
                           @if($sproduct->sale_price)
-                            <s>${{$sproduct->regular_price}}</s> ${{$sproduct->sale_price}}
+                            <s>{{formatVND($sproduct->regular_price)}}</s> {{formatVND($sproduct->sale_price)}}
                           @else
-                              ${{$sproduct->regular_price}}
+                              {{formatVND($sproduct->regular_price)}}
                           @endif
                         </span>
                       </div>                      
@@ -271,9 +271,9 @@
                 <div class="product-card__price d-flex align-items-center">
                   <span class="money price text-secondary">
                     @if($fproduct->sale_price)
-                      <s>${{$fproduct->regular_price}}</s> ${{$fproduct->sale_price}}
+                      <s>{{formatVND($fproduct->regular_price)}}</s> {{formatVND($fproduct->sale_price)}}
                     @else
-                        ${{$fproduct->regular_price}}
+                        {{formatVND($fproduct->regular_price)}}
                     @endif
                   </span>
                 </div>                

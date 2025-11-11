@@ -185,17 +185,17 @@
             </h5>
             <div id="accordion-filter-price" class="accordion-collapse collapse show border-0"
               aria-labelledby="accordion-heading-price" data-bs-parent="#price-filters">
-              <input class="price-range-slider" type="text" name="price_range" value="" data-slider-min="1" data-slider-max="500" data-slider-step="5" data-slider-value="[{{$min_price}},{{$max_price}}]" data-currency="$" />
-              <div class="price-range__info d-flex align-items-center mt-2">
-                <div class="me-auto">
-                  <span class="text-secondary">Giá tối thiểu: </span>
-                  <span class="price-range__min">$1</span>
+              <input class="price-range-slider" type="text" name="price_range" value="" data-slider-min="10000" data-slider-max="10000000" data-slider-step="100000" data-slider-value="[{{$min_price}},{{$max_price}}]" data-currency=" ₫" />
+                <div class="price-range__info d-flex align-items-center mt-2">
+                  <div class="me-auto">
+                    <span class="text-secondary">Giá tối thiểu: </span>
+                    <span class="price-range__min">10.000 ₫</span>
+                  </div>
+                  <div>
+                    <span class="text-secondary">Giá tối đa: </span>
+                    <span class="price-range__max">10.000.000 ₫</span>
+                  </div>
                 </div>
-                <div>
-                  <span class="text-secondary">Giá tối đa: </span>
-                  <span class="price-range__max">$500</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -379,31 +379,31 @@
                 <div class="product-card__price d-flex">
                   <span class="money price">
                     @if($product->sale_price)
-                    <s>${{$product->regular_price}}</s> ${{$product->sale_price}}
+                    <s>{{formatVND($product->regular_price)}}</s> 
+                    <span class="fw-bold" style="color: #b30000;">{{ formatVND($product->sale_price) }}</span>
                     @else
-                      ${{$product->regular_price}}
+                      <span class="fw-bold">{{formatVND($product->regular_price)}}</span>
                     @endif
                   </span>
                 </div>
-                <div class="product-card__review d-flex align-items-center">
+                <div class="product-single__rating">
                   <div class="reviews-group d-flex">
-                    <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                      <use href="#icon_star" />
-                    </svg>
-                    <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                      <use href="#icon_star" />
-                    </svg>
-                    <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                      <use href="#icon_star" />
-                    </svg>
-                    <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                      <use href="#icon_star" />
-                    </svg>
-                    <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                      <use href="#icon_star" />
-                    </svg>
+                    @php
+                      $avgRating = $product->averageRating() ?? 0;
+                    @endphp
+                    @for($i = 1; $i <= 5; $i++)
+                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg" 
+                           style="fill: {{ $i <= round($avgRating) ? '#ffc107' : '#ddd' }}">
+                        <use href="#icon_star" />
+                      </svg>
+                    @endfor
                   </div>
-                  <span class="reviews-note text-lowercase text-secondary ms-1">8k+ đánh giá</span>
+                  <span class="reviews-note text-lowercase text-secondary ms-1">
+                    {{ $product->totalReviews() }} đánh giá
+                    @if($avgRating > 0)
+                      ({{ number_format($avgRating, 1) }}/5)
+                    @endif
+                  </span>
                 </div>
 
                 @if(Cart::instance('wishlist')->content()->where('id', $product->id)->count() > 0)
@@ -515,6 +515,30 @@
 
     });
 
+
+        // Format giá VND cho price slider
+    $("[name='price_range']").on("slide", function(slideEvt) {
+        var min = slideEvt.value[0];
+        var max = slideEvt.value[1];
+        
+        // Format và hiển thị
+        $('.price-range__min').text(formatPriceVND(min));
+        $('.price-range__max').text(formatPriceVND(max));
+    });
+
+    // Hàm format giá VND
+    function formatPriceVND(price) {
+        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " ₫";
+    }
+
+    // Khởi tạo giá ban đầu
+    $(document).ready(function() {
+        var minPrice = parseInt($('#hdnMinPrice').val()) || 10000;
+        var maxPrice = parseInt($('#hdnMaxPrice').val()) || 10000000;
+        
+        $('.price-range__min').text(formatPriceVND(minPrice));
+        $('.price-range__max').text(formatPriceVND(maxPrice));
+    });
        
   </script>
 @endpush

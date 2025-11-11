@@ -30,7 +30,7 @@
                             </div>
                             <div>
                                 <div class="body-text mb-2">Tổng số tiền</div>
-                                <h4>{{$dashboardDatas[0]->TotalAmount}}</h4>
+                                <h4>{{formatVND($dashboardDatas[0]->TotalAmount)}}</h4>
                             </div>
                         </div>
                     </div>
@@ -60,7 +60,7 @@
                             </div>
                             <div>
                                 <div class="body-text mb-2">Số tiền đơn hàng chờ xử lý</div>
-                                <h4>{{$dashboardDatas[0]->TotalOrderedAmount}}</h4>
+                                <h4>{{formatVND($dashboardDatas[0]->TotalOrderedAmount)}}</h4>
                             </div>
                         </div>
                     </div>
@@ -93,7 +93,7 @@
                             </div>
                             <div>
                                 <div class="body-text mb-2">Số tiền đơn hàng đã giao</div>
-                                <h4>{{$dashboardDatas[0]->TotalDeliveredAmount}}</h4>
+                                <h4>{{formatVND($dashboardDatas[0]->TotalDeliveredAmount)}}</h4>
                             </div>
                         </div>
                     </div>
@@ -123,7 +123,7 @@
                             </div>
                             <div>
                                 <div class="body-text mb-2">Số tiền đơn hàng bị hủy</div>
-                                <h4>{{$dashboardDatas[0]->TotalCanceledAmount}}</h4>
+                                <h4>{{formatVND($dashboardDatas[0]->TotalCanceledAmount)}}</h4>
                             </div>
                         </div>
                     </div>
@@ -146,7 +146,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap10">
-                        <h4>${{$TotalAmount}}</h4>
+                        <h4>{{formatVND($TotalAmount)}}</h4>
                     </div>
                 </div>
                 <div>
@@ -157,7 +157,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap10">
-                        <h4>${{$TotalOrderedAmount}}</h4>
+                        <h4>{{formatVND($TotalOrderedAmount)}}</h4>
                     </div>
                 </div>
                 <div>
@@ -168,7 +168,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap10">
-                        <h4>${{$TotalDeliveredAmount}}</h4>
+                        <h4>{{formatVND($TotalDeliveredAmount)}}</h4>
                     </div>
                 </div>
                 <div>
@@ -179,7 +179,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap10">
-                        <h4>${{$TotalCanceledAmount}}</h4>
+                        <h4>{{formatVND($TotalCanceledAmount)}}</h4>
                     </div>
                 </div>
             </div>
@@ -222,9 +222,9 @@
                                 <td class="text-center">{{$order->id}}</td>
                                 <td class="text-center">{{$order->name}}</td>
                                 <td class="text-center">{{$order->phone}}</td>
-                                <td class="text-center">${{$order->subtotal}}</td>
-                                <td class="text-center">${{$order->tax}}</td>
-                                <td class="text-center">${{$order->total}}</td>
+                                <td class="text-center">{{formatVND($order->tax)}}</td>
+                                <td class="text-center">{{formatVND($order->subtotal)}}</td>
+                                <td class="text-center">{{formatVND($order->total)}}</td>
                                 <td class="text-center">
                                     @if ($order->status == 'delivered')
                                         <span class="badge bg-success">Đã giao</span>

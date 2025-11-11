@@ -136,20 +136,25 @@
                 </fieldset>
                 @error('images') <sapn class="alert alert-danger text-center">{{$message}} @enderror 
 
-                <div class="cols gap22">
+                    <div class="cols gap22">
+    
+                        <fieldset class="name">
+                            <div class="body-title mb-10">Giá thông thường (VND) <span class="tf-color-1">*</span></div>
+                            <input class="mb-10 format-vnd" type="text" placeholder="Nhập giá thông thường" name="regular_price_display" id="regular_price_display" tabindex="0" value="{{old('regular_price')}}" aria-required="true" required="">
+                            <input type="hidden" name="regular_price" id="regular_price">
+                            <div class="text-tiny">Ví dụ: 1.000.000</div>
+                        </fieldset>
+                        @error('regular_price') <span class="alert alert-danger text-center">{{$message}}</span> @enderror 
+                        
+                        <fieldset class="name">
+                            <div class="body-title mb-10">Giá bán (VND) <span class="tf-color-1">*</span></div>
+                            <input class="mb-10 format-vnd" type="text" placeholder="Nhập giá bán" name="sale_price_display" id="sale_price_display" tabindex="0" value="{{old('sale_price')}}" aria-required="true" required="">
+                            <input type="hidden" name="sale_price" id="sale_price">
+                            <div class="text-tiny">Ví dụ: 800.000</div>
+                        </fieldset>
+                        @error('sale_price') <span class="alert alert-danger text-center">{{$message}}</span> @enderror 
                     
-                    <fieldset class="name">
-                        <div class="body-title mb-10">Giá thông thường <span class="tf-color-1">*</span></div>
-                        <input class="mb-10" type="text" placeholder="Enter regular price" name="regular_price" tabindex="0" value="{{old('regular_price')}}" aria-required="true" required="">
-                    </fieldset>
-                    @error('regular_price') <sapn class="alert alert-danger text-center">{{$message}} @enderror 
-                    <fieldset class="name">
-                        <div class="body-title mb-10">Giá bán <span class="tf-color-1">*</span></div>
-                        <input class="mb-10" type="text" placeholder="Enter sale price" name="sale_price" tabindex="0" value="{{old('sale_price')}}" aria-required="true" required="">
-                    </fieldset>
-                    @error('sale_price') <sapn class="alert alert-danger text-center">{{$message}} @enderror 
-
-                </div>
+                    </div>
 
 
                 <div class="cols gap22">
@@ -208,10 +213,10 @@
 @push('scripts')
     <script>
         $(function(){
+            // Preview ảnh chính
             $("#myFile").on("change", function(e){
                 const [file] = this.files;
                 if (file) {
-               
                     if ($("#imgpreview img").length) {
                         $("#imgpreview img").attr('src', URL.createObjectURL(file));
                     } else {
@@ -220,20 +225,62 @@
                     $("#imgpreview").show();
                 }
             });
+
+            // Preview ảnh gallery
             $("#gFile").on("change", function(e){
                 const gphotos = this.files;
                 $.each(gphotos, function(key, val) {
                     $("#galUpload").prepend(`<div class="item gitems"><img src="${URL.createObjectURL(val)}" alt="Gallery Image"/></div>`);
                 });
             });
+
+            // Auto generate slug
             $("input[name='name']").on("change", function() {
                 $("input[name='slug']").val(StringToSlug($(this).val()));
             });
+
+            // Format VND cho giá thông thường
+            $("#regular_price_display").on("input", function() {
+                let value = $(this).val().replace(/\./g, ''); // Xóa dấu chấm cũ
+                if (!isNaN(value) && value !== '') {
+                    // Format hiển thị
+                    $(this).val(formatNumber(value));
+                    // Lưu giá trị thật vào hidden input
+                    $("#regular_price").val(value);
+                }
+            });
+
+            // Format VND cho giá bán
+            $("#sale_price_display").on("input", function() {
+                let value = $(this).val().replace(/\./g, ''); // Xóa dấu chấm cũ
+                if (!isNaN(value) && value !== '') {
+                    // Format hiển thị
+                    $(this).val(formatNumber(value));
+                    // Lưu giá trị thật vào hidden input
+                    $("#sale_price").val(value);
+                }
+            });
+
+            // Khi submit form
+            $("form").on("submit", function() {
+                // Đảm bảo giá trị hidden được cập nhật
+                let regularPrice = $("#regular_price_display").val().replace(/\./g, '');
+                let salePrice = $("#sale_price_display").val().replace(/\./g, '');
+                $("#regular_price").val(regularPrice);
+                $("#sale_price").val(salePrice);
+            });
         });
+
+        // Hàm chuyển string thành slug
         function StringToSlug(Text) {
             return Text.toLowerCase()
                 .replace(/[^\w ]+/g, "")
                 .replace(/ +/g, "-");
+        }
+
+        // Hàm format số thành dạng 1.000.000
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
     </script>
 @endpush

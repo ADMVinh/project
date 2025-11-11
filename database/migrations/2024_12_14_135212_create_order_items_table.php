@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('product_id')->unsigned();
             $table->bigInteger('order_id')->unsigned();
-            $table->decimal('price');
+            $table->decimal('price', 15, 2);
             $table->integer('quantity');
             $table->longText('options')->nullable();
             $table->boolean('rstatus')->default(false);

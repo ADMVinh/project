@@ -57,9 +57,21 @@
                             <tr>
                                 <td>{{$coupon->id}}</td>
                                 <td>{{$coupon->code}}</td>
-                                <td>{{$coupon->type}}</td>
-                                <td>{{$coupon->value}}</td>
-                                <td>${{$coupon->cart_value}}</td>
+                                <td>
+                                    @if($coupon->type == 'fixed')
+                                        <span class="badge bg-success">Cố định</span>
+                                    @else
+                                        <span class="badge bg-danger">Phần trăm</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($coupon->type == 'fixed')
+                                        {{formatVND($coupon->value)}}
+                                    @else
+                                        {{$coupon->value}}%
+                                    @endif
+                                </td>
+                                <td>{{formatVND($coupon->cart_value)}}</td>
                                 <td>{{$coupon->expiry_date}}</td>
                                 <td>
                                     <div class="list-icon-function">

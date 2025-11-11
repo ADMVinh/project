@@ -20,11 +20,17 @@ use Intervention\Image\Laravel\Facades\Image;
 use Mockery\Matcher\Ducktype;
 use PhpParser\Node\Expr\FuncCall;
 use Stringable;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Review;
 
 class AdminController extends Controller
 {
     public function index()
     {
+        $currentUser = Auth::user();
         $orders = Order::orderBy('created_at', 'DESC')->get()->take(10);
         $dashboardDatas = DB::select("Select sum(total) as TotalAmount,
         sum(if(status='ordered',total,0)) As TotalOrderedAmount,
@@ -50,6 +56,7 @@ class AdminController extends Controller
         sum(if(status='canceled',total,0)) As TotalCanceledAmount
         From Orders WHERE YEAR(created_at)=YEAR(NOW()) GROUP BY YEAR(created_at), MONTH(created_at) , DATE_FORMAT(created_at, '%b')
         Order By MONTH(created_at)) D On D.MonthNo=M.id");
+        
 
         $AmountM = implode(',', collect($monthlyDatas)->pluck('TotalAmount')->toArray());
         $OrderedAmountM = implode(',', collect($monthlyDatas)->pluck('TotalOrderedAmount')->toArray());
@@ -61,7 +68,7 @@ class AdminController extends Controller
         $TotalDeliveredAmount = collect($monthlyDatas)->sum('TotalDeliveredAmount');
         $TotalCanceledAmount = collect($monthlyDatas)->sum('TotalCanceledAmount');
 
-        return view('admin.index', compact('orders','dashboardDatas', 'AmountM', 'OrderedAmountM', 'DeliveredAmountM', 'CanceledAmountM', 'TotalAmount', 'TotalOrderedAmount', 'TotalDeliveredAmount', 'TotalCanceledAmount'  ));
+        return view('admin.index', compact('orders','dashboardDatas', 'AmountM', 'OrderedAmountM', 'DeliveredAmountM', 'CanceledAmountM', 'TotalAmount', 'TotalOrderedAmount', 'TotalDeliveredAmount', 'TotalCanceledAmount','currentUser'  ));
     }
 
     //view brand
@@ -648,4 +655,257 @@ class AdminController extends Controller
         $contact->delete();
         return redirect()->route('admin.contacts')->with("status","Đã xóa liên hệ thành công");
     }
+
+
+
+    public function users(Request $request)
+    {
+        $currentUser = Auth::user();
+        $query = User::query();
+    
+        // Tìm kiếm
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('mobile', 'like', "%{$search}%");
+            });
+        }
+    
+        // Lọc theo loại user
+        if ($request->has('utype') && $request->utype != '') {
+            $query->where('utype', $request->utype);
+        }
+    
+        // Lọc theo trạng thái email verified
+        if ($request->has('verified') && $request->verified != '') {
+            if ($request->verified == '1') {
+                $query->whereNotNull('email_verified_at');
+            } else {
+                $query->whereNull('email_verified_at');
+            }
+        }
+    
+        $users = $query->orderBy('created_at', 'desc')->paginate(10);
+    
+        return view('admin.users', compact('users', 'currentUser'));
+    }
+    
+    /**
+     * Hiển thị form tạo người dùng mới
+     */
+    public function user_add()
+    {
+        return view('admin.user-add');
+    }
+    
+    /**
+     * Lưu người dùng mới
+     */
+    public function user_store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'mobile' => 'required|string|max:20|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'utype' => 'required|in:USER,ADM',
+        ]);
+    
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->mobile = $request->mobile;
+        $user->password = Hash::make($request->password);
+        $user->utype = $request->utype;
+        $user->email_verified_at = $request->has('email_verified') ? now() : null;
+        $user->save();
+    
+        return redirect()->route('admin.users')->with('status', 'Người dùng đã được thêm thành công!');
+    }
+    
+    /**
+     * Hiển thị chi tiết người dùng
+     */
+    public function user_details($id)
+    {
+        $user = User::findOrFail($id);
+        return view('admin.user-details', compact('user'));
+    }
+    
+    /**
+     * Hiển thị form chỉnh sửa
+     */
+    public function user_edit($id)
+    {
+        $user = User::findOrFail($id);
+        return view('admin.user-edit', compact('user'));
+    }
+    
+    /**
+     * Cập nhật thông tin người dùng
+     */
+    public function user_update(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($request->id)],
+            'mobile' => ['required', 'string', 'max:20', Rule::unique('users')->ignore($request->id)],
+            'utype' => 'required|in:USER,ADM',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+    
+        $user = User::findOrFail($request->id);
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->mobile = $request->mobile;
+        $user->utype = $request->utype;
+    
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+    
+        if ($request->has('email_verified')) {
+            $user->email_verified_at = now();
+        } else {
+            $user->email_verified_at = null;
+        }
+    
+        $user->save();
+    
+        return redirect()->route('admin.users')->with('status', 'Người dùng đã được cập nhật thành công!');
+    }
+    
+    /**
+     * Xóa người dùng
+     */
+    public function user_delete($id)
+    {
+        $user = User::findOrFail($id);
+        
+        // Không cho phép xóa chính mình
+        if ($user->id == Auth::id()) {
+            return back()->with('error', 'Bạn không thể xóa tài khoản của chính mình!');
+        }
+    
+        $user->delete();
+    
+        return redirect()->route('admin.users')->with('status', 'Người dùng đã được xóa thành công!');
+    }
+    
+    /**
+     * Xác thực email cho người dùng
+     */
+    public function user_verify_email($id)
+    {
+        $user = User::findOrFail($id);
+        $user->email_verified_at = now();
+        $user->save();
+    
+        return back()->with('status', 'Đã xác thực email cho người dùng!');
+    }
+    
+    /**
+     * Hủy xác thực email
+     */
+    public function user_unverify_email($id)
+    {
+        $user = User::findOrFail($id);
+        $user->email_verified_at = null;
+        $user->save();
+    
+        return back()->with('status', 'Đã hủy xác thực email!');
+    }
+
+
+
+
+
+
+    // Hiển thị danh sách reviews
+    public function reviews(Request $request)
+    {
+        $query = Review::with(['user', 'product'])->parentReviews();
+        
+        // Filter by status
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter by rating
+        if ($request->has('rating') && $request->rating != '') {
+            $query->where('rating', $request->rating);
+        }
+        
+        // Search
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('comment', 'like', "%{$search}%")
+                ->orWhere('title', 'like', "%{$search}%")
+                ->orWhereHas('user', function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+        
+        $reviews = $query->orderBy('created_at', 'DESC')->paginate(15);
+        
+        return view('admin.reviews', compact('reviews'));
+    }
+
+    // Hiển thị chi tiết review
+    public function review_details($id)
+    {
+        $review = Review::with(['user', 'product', 'replies.user'])->findOrFail($id);
+        return view('admin.review-details', compact('review'));
+    }
+
+    // Cập nhật trạng thái review
+    public function review_update_status(Request $request)
+    {
+        $request->validate([
+            'review_id' => 'required|exists:reviews,id',
+            'status' => 'required|in:pending,approved,rejected'
+        ]);
+        
+        $review = Review::findOrFail($request->review_id);
+        $review->status = $request->status;
+        $review->save();
+        
+        return back()->with('status', 'Trạng thái đánh giá đã được cập nhật!');
+    }
+
+    // Admin reply to review
+    public function review_reply(Request $request)
+    {
+        $request->validate([
+            'parent_id' => 'required|exists:reviews,id',
+            'comment' => 'required|string|max:1000'
+        ]);
+        
+        $parentReview = Review::findOrFail($request->parent_id);
+        
+        $reply = new Review();
+        $reply->product_id = $parentReview->product_id;
+        $reply->user_id = Auth::id(); // Admin user
+        $reply->parent_id = $request->parent_id;
+        $reply->rating = 0; // Replies don't have rating
+        $reply->comment = $request->comment;
+        $reply->status = 'approved'; // Admin replies are auto-approved
+        $reply->save();
+        
+        return back()->with('status', 'Đã trả lời đánh giá thành công!');
+    }
+
+    // Xóa review
+    public function review_delete($id)
+    {
+        $review = Review::findOrFail($id);
+        $review->delete();
+        
+        return redirect()->route('admin.reviews')->with('status', 'Đánh giá đã được xóa thành công!');
+    }
+
 }

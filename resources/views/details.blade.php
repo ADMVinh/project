@@ -4,7 +4,79 @@
   .filled-heart{
     color: red;
   }
+  
+  .review-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: box-shadow 0.3s;
+  }
+
+  .review-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .review-stars {
+    color: #ffc107;
+    font-size: 1.2rem;
+  }
+
+  .review-reply {
+    background-color: #f8f9fa;
+    border-left: 3px solid #0d6efd;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 5px;
+  }
+
+  .rating-summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .rating-breakdown {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .rating-bar {
+    flex-grow: 1;
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    margin: 0 10px;
+    overflow: hidden;
+  }
+
+  .rating-bar-fill {
+    height: 100%;
+    background-color: #ffc107;
+    transition: width 0.3s;
+  }
+
+  .verified-purchase {
+    color: #28a745;
+    font-weight: 600;
+  }
+  
+  .avatar-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #6c757d;
+  }
 </style>
+
 <main class="pt-90">
     <div class="mb-md-1 pb-md-3"></div>
     <section class="product-single container">
@@ -60,13 +132,12 @@
         <div class="col-lg-5">
           <div class="d-flex justify-content-between mb-4 pb-md-2">
             <div class="breadcrumb mb-0 d-none d-md-block flex-grow-1">
-              <a href="#" class="menu-link menu-link_us-s text-uppercase fw-medium">Trang chủ</a>
+              <a href="{{route('home.index')}}" class="menu-link menu-link_us-s text-uppercase fw-medium">Trang chủ</a>
               <span class="breadcrumb-separator menu-link fw-medium ps-1 pe-1">/</span>
-              <a href="#" class="menu-link menu-link_us-s text-uppercase fw-medium">Cửa hàng</a>
-            </div><!-- /.breadcrumb -->
+              <a href="{{route('shop.index')}}" class="menu-link menu-link_us-s text-uppercase fw-medium">Cửa hàng</a>
+            </div>
 
-            <div
-              class="product-single__prev-next d-flex align-items-center justify-content-between justify-content-md-end flex-grow-1">
+            <div class="product-single__prev-next d-flex align-items-center justify-content-between justify-content-md-end flex-grow-1">
               <a href="#" class="text-uppercase fw-medium"><svg width="10" height="10" viewBox="0 0 25 25"
                   xmlns="http://www.w3.org/2000/svg">
                   <use href="#icon_prev_md" />
@@ -75,35 +146,34 @@
                   width="10" height="10" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
                   <use href="#icon_next_md" />
                 </svg></a>
-            </div><!-- /.shop-acs -->
+            </div>
           </div>
           <h1 class="product-single__name">{{$product->name}}</h1>
           <div class="product-single__rating">
             <div class="reviews-group d-flex">
-              <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                <use href="#icon_star" />
-              </svg>
-              <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                <use href="#icon_star" />
-              </svg>
-              <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                <use href="#icon_star" />
-              </svg>
-              <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                <use href="#icon_star" />
-              </svg>
-              <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                <use href="#icon_star" />
-              </svg>
+              @php
+                $avgRating = $product->averageRating() ?? 0;
+              @endphp
+              @for($i = 1; $i <= 5; $i++)
+                <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg" 
+                     style="fill: {{ $i <= round($avgRating) ? '#ffc107' : '#ddd' }}">
+                  <use href="#icon_star" />
+                </svg>
+              @endfor
             </div>
-            <span class="reviews-note text-lowercase text-secondary ms-1">8k+ reviews</span>
+            <span class="reviews-note text-lowercase text-secondary ms-1">
+              {{ $product->totalReviews() }} đánh giá
+              @if($avgRating > 0)
+                ({{ number_format($avgRating, 1) }}/5)
+              @endif
+            </span>
           </div>
           <div class="product-single__price">
             <span class="current-price">
                     @if($product->sale_price)
-                    <s>${{$product->regular_price}}</s> ${{$product->sale_price}}
+                    <s>{{formatVND($product->regular_price)}}</s> {{formatVND($product->sale_price)}}
                     @else
-                      ${{$product->regular_price}}
+                      {{formatVND($product->regular_price)}}
                     @endif
             </span>
           </div>
@@ -111,7 +181,7 @@
             <p>{{$product->short_description}}</p>
           </div>
           @if(Cart::instance('cart')->content()->where('id',$product->id)->count()>0)
-            <a href="{{route('cart.index')}}" class="btn btn-warning mb-3">Go to cart</a>
+            <a href="{{route('cart.index')}}" class="btn btn-warning mb-3">Đi đến giỏ hàng</a>
           @else
           <form name="addtocart-form" method="post" action="{{route('cart.add')}}">
             @csrf
@@ -120,7 +190,7 @@
                 <input type="number" name="quantity" value="1" min="1" class="qty-control__number text-center">
                 <div class="qty-control__reduce">-</div>
                 <div class="qty-control__increase">+</div>
-              </div><!-- .qty-control -->
+              </div>
               <input type="hidden" name="id" value="{{$product -> id}}" />
               <input type="hidden" name="name" value="{{$product -> name}}" />
               <input type="hidden" name="price" value="{{$product -> sale_price == '' ? $product->regular_price : $product->sale_price}}" />
@@ -145,45 +215,21 @@
               <input type="hidden" name="name" value="{{$product->name}}" />
               <input type="hidden" name="price" value="{{$product->sale_price == '' ? $product->regular_price : $product->sale_price }}" />
               <input type="hidden" name="quantity" value="1" />
-              <a href="javascript:void(0)" class="menu-link menu-link_us-s add-to-wishlist" onclick="document.getElementById('wishlist-form') .submit()"><svg width="16" height="16" viewBox="0 0 20 20"
+              <a href="javascript:void(0)" class="menu-link menu-link_us-s add-to-wishlist" onclick="document.getElementById('wishlist-form').submit()"><svg width="16" height="16" viewBox="0 0 20 20"
                 fill="none" xmlns="http://www.w3.org/2000/svg">
                 <use href="#icon_heart" />
-              </svg><span>Add to Wishlist</span></a>
+              </svg><span>Thêm vào yêu thích</span></a>
             </form>
             @endif
-
 
             <share-button class="share-button">
               <button class="menu-link menu-link_us-s to-share border-0 bg-transparent d-flex align-items-center">
                 <svg width="16" height="19" viewBox="0 0 16 19" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <use href="#icon_sharing" />
                 </svg>
-                <span>Share</span>
+                <span>Chia sẻ</span>
               </button>
-              <details id="Details-share-template__main" class="m-1 xl:m-1.5" hidden="">
-                <summary class="btn-solid m-1 xl:m-1.5 pt-3.5 pb-3 px-5">+</summary>
-                <div id="Article-share-template__main"
-                  class="share-button__fallback flex items-center absolute top-full left-0 w-full px-2 py-4 bg-container shadow-theme border-t z-10">
-                  <div class="field grow mr-4">
-                    <label class="field__label sr-only" for="url">Link</label>
-                    <input type="text" class="field__input w-full" id="url"
-                      value="https://uomo-crystal.myshopify.com/blogs/news/go-to-wellness-tips-for-mental-health"
-                      placeholder="Link" onclick="this.select();" readonly="">
-                  </div>
-                  <button class="share-button__copy no-js-hidden">
-                    <svg class="icon icon-clipboard inline-block mr-1" width="11" height="13" fill="none"
-                      xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" viewBox="0 0 11 13">
-                      <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M2 1a1 1 0 011-1h7a1 1 0 011 1v9a1 1 0 01-1 1V1H2zM1 2a1 1 0 00-1 1v9a1 1 0 001 1h7a1 1 0 001-1V3a1 1 0 00-1-1H1zm0 10V3h7v9H1z"
-                        fill="currentColor"></path>
-                    </svg>
-                    <span class="sr-only">sao chép địa chỉ</span>
-                  </button>
-                </div>
-              </details>
             </share-button>
-            <script src="js/details-disclosure.html" defer="defer"></script>
-            <script src="js/share.html" defer="defer"></script>
           </div>
           <div class="product-single__meta-info">
             <div class="meta-item">
@@ -191,21 +237,22 @@
               <span>{{$product->SKU}}</span>
             </div>
             <div class="meta-item">
-              <label>danh mục:</label>
+              <label>Danh mục:</label>
               <span>{{$product->category->name}}</span>
             </div>
             <div class="meta-item">
-              <label>Thẻ:</label>
-              <span>NA</span>
+              <label>Thương hiệu:</label>
+              <span>{{$product->brand->name}}</span>
             </div>
           </div>
         </div>
       </div>
+      
       <div class="product-single__details-tab">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
             <a class="nav-link nav-link_underscore active" id="tab-description-tab" data-bs-toggle="tab"
-              href="#tab-description" role="tab" aria-controls="tab-description" aria-selected="true">Sự miêu tả</a>
+              href="#tab-description" role="tab" aria-controls="tab-description" aria-selected="true">Mô tả</a>
           </li>
           <li class="nav-item" role="presentation">
             <a class="nav-link nav-link_underscore" id="tab-additional-info-tab" data-bs-toggle="tab"
@@ -214,7 +261,9 @@
           </li>
           <li class="nav-item" role="presentation">
             <a class="nav-link nav-link_underscore" id="tab-reviews-tab" data-bs-toggle="tab" href="#tab-reviews"
-              role="tab" aria-controls="tab-reviews" aria-selected="false">Đánh giá (2)</a>
+              role="tab" aria-controls="tab-reviews" aria-selected="false">
+              Đánh giá ({{ $product->totalReviews() }})
+            </a>
           </li>
         </ul>
         <div class="tab-content">
@@ -224,160 +273,146 @@
                 {{$product->description}}
             </div>
           </div>
+          
           <div class="tab-pane fade" id="tab-additional-info" role="tabpanel" aria-labelledby="tab-additional-info-tab">
             <div class="product-single__addtional-info">
               <div class="item">
-                <label class="h6">Cân nặng</label>
-                <span>1.25 kg</span>
+                <label class="h6">Trạng thái kho</label>
+                <span>{{ $product->stock_status == 'instock' ? 'Còn hàng' : 'Hết hàng' }}</span>
               </div>
               <div class="item">
-                <label class="h6">Kích thước</label>
-                <span>90 x 60 x 90 cm</span>
+                <label class="h6">Số lượng</label>
+                <span>{{ $product->quantity }}</span>
               </div>
               <div class="item">
-                <label class="h6">Size</label>
-                <span>XS, S, M, L, XL</span>
-              </div>
-              <div class="item">
-                <label class="h6">Màu sắc</label>
-                <span>Black, Orange, White</span>
-              </div>
-              <div class="item">
-                <label class="h6">Kho</label>
-                <span>Váy sơ mi dáng rộng thoải mái với thiết kế khỏe khoắn</span>
+                <label class="h6">SKU</label>
+                <span>{{ $product->SKU }}</span>
               </div>
             </div>
           </div>
+          
           <div class="tab-pane fade" id="tab-reviews" role="tabpanel" aria-labelledby="tab-reviews-tab">
-            <h2 class="product-single__reviews-title">Đánh giá</h2>
-            <div class="product-single__reviews-list">
-              <div class="product-single__reviews-item">
-                <div class="customer-avatar">
-                  <img loading="lazy" src="assets/images/avatar.jpg" alt="" />
-                </div>
-                <div class="customer-review">
-                  <div class="customer-name">
-                    <h6>Quang Vinh</h6>
-                    <div class="reviews-group d-flex">
-                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                        <use href="#icon_star" />
-                      </svg>
-                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                        <use href="#icon_star" />
-                      </svg>
-                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                        <use href="#icon_star" />
-                      </svg>
-                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                        <use href="#icon_star" />
-                      </svg>
-                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                        <use href="#icon_star" />
-                      </svg>
+            <!-- Reviews Section -->
+            <section class="product-single__reviews mt-4">
+              <div class="row">
+                <!-- Left Column - Rating Summary -->
+                <div class="col-lg-4 mb-4">
+                  <div class="rating-summary">
+                    <div class="mb-3">
+                      <h1 class="display-3 mb-0">{{ number_format($product->averageRating() ?? 0, 1) }}</h1>
+                      <div class="review-stars mb-2">
+                        @for($i = 1; $i <= 5; $i++)
+                          @if($i <= round($product->averageRating() ?? 0))
+                            ★
+                          @else
+                            ☆
+                          @endif
+                        @endfor
+                      </div>
+                      <p class="mb-0">{{ $product->totalReviews() }} đánh giá</p>
                     </div>
                   </div>
-                  <div class="review-date">April 06, 2023</div>
-                  <div class="review-text">
-                    <p>Sản phẩm chất lượng tuyệt vời, sử dụng dễ dàng và hiệu quả.</p>
+
+                  <!-- Rating Breakdown -->
+                  <div class="mt-4">
+                    <h6 class="mb-3">Phân bố đánh giá</h6>
+                    @php
+                      $distribution = $product->ratingDistribution();
+                      $total = $product->totalReviews();
+                    @endphp
+                    @for($i = 5; $i >= 1; $i--)
+                      @php
+                        $count = $distribution[$i] ?? 0;
+                        $percentage = $total > 0 ? ($count / $total) * 100 : 0;
+                      @endphp
+                      <div class="rating-breakdown">
+                        <span class="me-2">{{ $i }} ★</span>
+                        <div class="rating-bar">
+                          <div class="rating-bar-fill" style="width: {{ $percentage }}%"></div>
+                        </div>
+                        <span class="ms-2 text-muted">{{ $count }}</span>
+                      </div>
+                    @endfor
                   </div>
                 </div>
-              </div>
-              <div class="product-single__reviews-item">
-                <div class="customer-avatar">
-                  <img loading="lazy" src="assets/images/avatar.jpg" alt="" />
-                </div>
-                <div class="customer-review">
-                  <div class="customer-name">
-                    <h6>Nguyễn Văn A</h6>
-                    <div class="reviews-group d-flex">
-                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                        <use href="#icon_star" />
-                      </svg>
-                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                        <use href="#icon_star" />
-                      </svg>
-                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                        <use href="#icon_star" />
-                      </svg>
-                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                        <use href="#icon_star" />
-                      </svg>
-                      <svg class="review-star" viewBox="0 0 9 9" xmlns="http://www.w3.org/2000/svg">
-                        <use href="#icon_star" />
-                      </svg>
+
+                <!-- Right Column - Reviews List -->
+                <div class="col-lg-8">
+                  @if($product->approvedReviews->count() > 0)
+                    @foreach($product->approvedReviews as $review)
+                    <div class="review-card" id="review-{{ $review->id }}">
+                      <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                          <div class="me-3">
+                            <div class="avatar-circle">
+                              <i class="fa fa-user"></i>
+                            </div>
+                          </div>
+                          <div>
+                            <h6 class="mb-1">{{ $review->user->name }}</h6>
+                            <div class="review-stars mb-1">
+                              @for($i = 1; $i <= 5; $i++)
+                                @if($i <= $review->rating)
+                                  ★
+                                @else
+                                  ☆
+                                @endif
+                              @endfor
+                            </div>
+                            @if($review->verified_purchase)
+                              <small class="verified-purchase">
+                                <i class="fa fa-check-circle"></i> Đã mua hàng
+                              </small>
+                            @endif
+                          </div>
+                        </div>
+                        <small class="text-muted">{{ $review->created_at->diffForHumans() }}</small>
+                      </div>
+
+                      @if($review->title)
+                        <h6 class="fw-bold mb-2">{{ $review->title }}</h6>
+                      @endif
+
+                      <p class="mb-3">{{ $review->comment }}</p>
+
+                      <!-- Admin Replies -->
+                      @if($review->replies->count() > 0)
+                        @foreach($review->replies as $reply)
+                        <div class="review-reply">
+                          <div class="d-flex align-items-center mb-2">
+                            <i class="fa fa-user-circle text-primary me-2" style="font-size: 1.5rem;"></i>
+                            <div>
+                              <strong>{{ $reply->user->name }}</strong>
+                              @if($reply->user->utype == 'ADM')
+                                <span class="badge bg-primary ms-2">Admin</span>
+                              @endif
+                              <br>
+                              <small class="text-muted">{{ $reply->created_at->diffForHumans() }}</small>
+                            </div>
+                          </div>
+                          <p class="mb-0">{{ $reply->comment }}</p>
+                        </div>
+                        @endforeach
+                      @endif
                     </div>
-                  </div>
-                  <div class="review-date">April 06, 2023</div>
-                  <div class="review-text">
-                    <p></p>
-                  </div>
+                    @endforeach
+                  @else
+                    <div class="text-center py-5">
+                      <i class="fa fa-comment-o" style="font-size: 4rem; color: #ddd;"></i>
+                      <h5 class="mt-3 text-muted">Chưa có đánh giá nào</h5>
+                      <p class="text-muted">Hãy là người đầu tiên đánh giá sản phẩm này</p>
+                    </div>
+                  @endif
                 </div>
               </div>
-            </div>
-            <div class="product-single__review-form">
-              <form name="customer-review-form">
-                <h5>Hãy là người đầu tiên đánh giá “Áo thun cotton Message”</h5>
-                <p>Địa chỉ email của bạn sẽ không được công bố. Các trường bắt buộc được đánh dấu *</p>
-                <div class="select-star-rating">
-                  <label>Your rating *</label>
-                  <span class="star-rating">
-                    <svg class="star-rating__star-icon" width="12" height="12" fill="#ccc" viewBox="0 0 12 12"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M11.1429 5.04687C11.1429 4.84598 10.9286 4.76562 10.7679 4.73884L7.40625 4.25L5.89955 1.20312C5.83929 1.07589 5.72545 0.928571 5.57143 0.928571C5.41741 0.928571 5.30357 1.07589 5.2433 1.20312L3.73661 4.25L0.375 4.73884C0.207589 4.76562 0 4.84598 0 5.04687C0 5.16741 0.0870536 5.28125 0.167411 5.3683L2.60491 7.73884L2.02902 11.0871C2.02232 11.1339 2.01563 11.1741 2.01563 11.221C2.01563 11.3951 2.10268 11.5558 2.29688 11.5558C2.39063 11.5558 2.47768 11.5223 2.56473 11.4754L5.57143 9.89509L8.57813 11.4754C8.65848 11.5223 8.75223 11.5558 8.84598 11.5558C9.04018 11.5558 9.12054 11.3951 9.12054 11.221C9.12054 11.1741 9.12054 11.1339 9.11384 11.0871L8.53795 7.73884L10.9688 5.3683C11.0558 5.28125 11.1429 5.16741 11.1429 5.04687Z" />
-                    </svg>
-                    <svg class="star-rating__star-icon" width="12" height="12" fill="#ccc" viewBox="0 0 12 12"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M11.1429 5.04687C11.1429 4.84598 10.9286 4.76562 10.7679 4.73884L7.40625 4.25L5.89955 1.20312C5.83929 1.07589 5.72545 0.928571 5.57143 0.928571C5.41741 0.928571 5.30357 1.07589 5.2433 1.20312L3.73661 4.25L0.375 4.73884C0.207589 4.76562 0 4.84598 0 5.04687C0 5.16741 0.0870536 5.28125 0.167411 5.3683L2.60491 7.73884L2.02902 11.0871C2.02232 11.1339 2.01563 11.1741 2.01563 11.221C2.01563 11.3951 2.10268 11.5558 2.29688 11.5558C2.39063 11.5558 2.47768 11.5223 2.56473 11.4754L5.57143 9.89509L8.57813 11.4754C8.65848 11.5223 8.75223 11.5558 8.84598 11.5558C9.04018 11.5558 9.12054 11.3951 9.12054 11.221C9.12054 11.1741 9.12054 11.1339 9.11384 11.0871L8.53795 7.73884L10.9688 5.3683C11.0558 5.28125 11.1429 5.16741 11.1429 5.04687Z" />
-                    </svg>
-                    <svg class="star-rating__star-icon" width="12" height="12" fill="#ccc" viewBox="0 0 12 12"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M11.1429 5.04687C11.1429 4.84598 10.9286 4.76562 10.7679 4.73884L7.40625 4.25L5.89955 1.20312C5.83929 1.07589 5.72545 0.928571 5.57143 0.928571C5.41741 0.928571 5.30357 1.07589 5.2433 1.20312L3.73661 4.25L0.375 4.73884C0.207589 4.76562 0 4.84598 0 5.04687C0 5.16741 0.0870536 5.28125 0.167411 5.3683L2.60491 7.73884L2.02902 11.0871C2.02232 11.1339 2.01563 11.1741 2.01563 11.221C2.01563 11.3951 2.10268 11.5558 2.29688 11.5558C2.39063 11.5558 2.47768 11.5223 2.56473 11.4754L5.57143 9.89509L8.57813 11.4754C8.65848 11.5223 8.75223 11.5558 8.84598 11.5558C9.04018 11.5558 9.12054 11.3951 9.12054 11.221C9.12054 11.1741 9.12054 11.1339 9.11384 11.0871L8.53795 7.73884L10.9688 5.3683C11.0558 5.28125 11.1429 5.16741 11.1429 5.04687Z" />
-                    </svg>
-                    <svg class="star-rating__star-icon" width="12" height="12" fill="#ccc" viewBox="0 0 12 12"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M11.1429 5.04687C11.1429 4.84598 10.9286 4.76562 10.7679 4.73884L7.40625 4.25L5.89955 1.20312C5.83929 1.07589 5.72545 0.928571 5.57143 0.928571C5.41741 0.928571 5.30357 1.07589 5.2433 1.20312L3.73661 4.25L0.375 4.73884C0.207589 4.76562 0 4.84598 0 5.04687C0 5.16741 0.0870536 5.28125 0.167411 5.3683L2.60491 7.73884L2.02902 11.0871C2.02232 11.1339 2.01563 11.1741 2.01563 11.221C2.01563 11.3951 2.10268 11.5558 2.29688 11.5558C2.39063 11.5558 2.47768 11.5223 2.56473 11.4754L5.57143 9.89509L8.57813 11.4754C8.65848 11.5223 8.75223 11.5558 8.84598 11.5558C9.04018 11.5558 9.12054 11.3951 9.12054 11.221C9.12054 11.1741 9.12054 11.1339 9.11384 11.0871L8.53795 7.73884L10.9688 5.3683C11.0558 5.28125 11.1429 5.16741 11.1429 5.04687Z" />
-                    </svg>
-                    <svg class="star-rating__star-icon" width="12" height="12" fill="#ccc" viewBox="0 0 12 12"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M11.1429 5.04687C11.1429 4.84598 10.9286 4.76562 10.7679 4.73884L7.40625 4.25L5.89955 1.20312C5.83929 1.07589 5.72545 0.928571 5.57143 0.928571C5.41741 0.928571 5.30357 1.07589 5.2433 1.20312L3.73661 4.25L0.375 4.73884C0.207589 4.76562 0 4.84598 0 5.04687C0 5.16741 0.0870536 5.28125 0.167411 5.3683L2.60491 7.73884L2.02902 11.0871C2.02232 11.1339 2.01563 11.1741 2.01563 11.221C2.01563 11.3951 2.10268 11.5558 2.29688 11.5558C2.39063 11.5558 2.47768 11.5223 2.56473 11.4754L5.57143 9.89509L8.57813 11.4754C8.65848 11.5223 8.75223 11.5558 8.84598 11.5558C9.04018 11.5558 9.12054 11.3951 9.12054 11.221C9.12054 11.1741 9.12054 11.1339 9.11384 11.0871L8.53795 7.73884L10.9688 5.3683C11.0558 5.28125 11.1429 5.16741 11.1429 5.04687Z" />
-                    </svg>
-                  </span>
-                  <input type="hidden" id="form-input-rating" value="" />
-                </div>
-                <div class="mb-4">
-                  <textarea id="form-input-review" class="form-control form-control_gray" placeholder="Your Review"
-                    cols="30" rows="8"></textarea>
-                </div>
-                <div class="form-label-fixed mb-4">
-                  <label for="form-input-name" class="form-label">Tên *</label>
-                  <input id="form-input-name" class="form-control form-control-md form-control_gray">
-                </div>
-                <div class="form-label-fixed mb-4">
-                  <label for="form-input-email" class="form-label">Địa chị Email *</label>
-                  <input id="form-input-email" class="form-control form-control-md form-control_gray">
-                </div>
-                <div class="form-check mb-4">
-                  <input class="form-check-input form-check-input_fill" type="checkbox" value="" id="remember_checkbox">
-                  <label class="form-check-label" for="remember_checkbox">
-                    Lưu tên, email và trang web của tôi trong trình duyệt này cho lần bình luận tiếp theo của tôi.
-                  </label>
-                </div>
-                <div class="form-action">
-                  <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
-              </form>
-            </div>
+            </section>
           </div>
         </div>
       </div>
     </section>
+    
     <section class="products-carousel container">
-      <h2 class="h3 text-uppercase mb-4 pb-xl-2 mb-xl-4">Có liên quan <strong>Các sản phẩm</strong></h2>
+      <h2 class="h3 text-uppercase mb-4 pb-xl-2 mb-xl-4">Sản phẩm <strong>Liên quan</strong></h2>
 
       <div id="related_products" class="position-relative">
         <div class="swiper-container js-swiper-slider" data-settings='{
@@ -414,38 +449,41 @@
             }
           }'>
           <div class="swiper-wrapper">
-            @foreach ($lproducts as $lproduct)
+            @foreach ($rproducts as $rproduct)
             <div class="swiper-slide product-card">
               <div class="pc__img-wrapper">
-                <a href="{{route('shop.products.details',['product_slug'=>$lproduct->slug])}}">
-                  <img loading="lazy" src="{{asset('uploads/products')}}/{{$lproduct->image}}" width="330" height="400" alt="{{$lproduct->name}}" class="pc__img">
-                  @foreach (explode(",",$lproduct->images) as $gimg)
-                  <img loading="lazy" src="{{asset('uploads/products')}}/{{$gimg}}" width="330" height="400" alt="{{$lproduct->name}}" class="pc__img pc__img-second">
-                  @endforeach
+                <a href="{{route('shop.products.details',['product_slug'=>$rproduct->slug])}}">
+                  <img loading="lazy" src="{{asset('uploads/products')}}/{{$rproduct->image}}" width="330" height="400" alt="{{$rproduct->name}}" class="pc__img">
+                  @php
+                    $images = explode(",",$rproduct->images);
+                  @endphp
+                  @if(count($images) > 0 && !empty($images[0]))
+                    <img loading="lazy" src="{{asset('uploads/products')}}/{{$images[0]}}" width="330" height="400" alt="{{$rproduct->name}}" class="pc__img pc__img-second">
+                  @endif
                 </a>
-                @if(Cart::instance('cart')->content()->where('id',$lproduct->id)->count()>0)
+                @if(Cart::instance('cart')->content()->where('id',$rproduct->id)->count()>0)
                 <a href="{{route('cart.index')}}" class="pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium btn btn-warning mb-3">Đi đến giỏ hàng</a>
                 @else
                 <form name="addtocart-form" method="post" action="{{route('cart.add')}}">
                 @csrf
-                <input type="hidden" name="id" value="{{$lproduct -> id}}" />
+                <input type="hidden" name="id" value="{{$rproduct -> id}}" />
                 <input type="hidden" name="quantity" value="1" />
-                <input type="hidden" name="name" value="{{$lproduct -> name}}" />
-                <input type="hidden" name="price" value="{{$lproduct -> sale_price == '' ? $lproduct->regular_price : $lproduct->sale_price}}" />
+                <input type="hidden" name="name" value="{{$rproduct -> name}}" />
+                <input type="hidden" name="price" value="{{$rproduct -> sale_price == '' ? $rproduct->regular_price : $rproduct->sale_price}}" />
                 <button type="submit" class="pc__atc btn anim_appear-bottom btn position-absolute border-0 text-uppercase fw-medium" data-aside="cartDrawer" title="Add To Cart">Thêm giỏ hàng</button>
                 </form>
                 @endif
               </div>
 
               <div class="pc__info position-relative">
-                <p class="pc__category">{{$lproduct->category->name}}</p>
-                <h6 class="pc__title"><a href="{{route('shop.products.details',['product_slug'=>$product->slug])}}">{{$lproduct->name}}</a></h6>
+                <p class="pc__category">{{$rproduct->category->name}}</p>
+                <h6 class="pc__title"><a href="{{route('shop.products.details',['product_slug'=>$rproduct->slug])}}">{{$rproduct->name}}</a></h6>
                 <div class="product-card__price d-flex">
                   <span class="money price">
-                    @if($product->sale_price)
-                    <s>${{$product->regular_price}}</s> ${{$lproduct->sale_price}}
+                    @if($rproduct->sale_price)
+                    <s>{{formatVND($rproduct->regular_price)}}</s> {{formatVND($rproduct->sale_price)}}
                     @else
-                      ${{$product->regular_price}}
+                      {{formatVND($rproduct->regular_price)}}
                     @endif
                   </span>
                 </div>
@@ -458,27 +496,24 @@
                 </button>
               </div>
             </div>
-
             @endforeach
-          </div><!-- /.swiper-wrapper -->
-        </div><!-- /.swiper-container js-swiper-slider -->
+          </div>
+        </div>
 
         <div class="products-carousel__prev position-absolute top-50 d-flex align-items-center justify-content-center">
           <svg width="25" height="25" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
             <use href="#icon_prev_md" />
           </svg>
-        </div><!-- /.products-carousel__prev -->
+        </div>
         <div class="products-carousel__next position-absolute top-50 d-flex align-items-center justify-content-center">
           <svg width="25" height="25" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
             <use href="#icon_next_md" />
           </svg>
-        </div><!-- /.products-carousel__next -->
+        </div>
 
         <div class="products-pagination mt-4 mb-5 d-flex align-items-center justify-content-center"></div>
-        <!-- /.products-pagination -->
-      </div><!-- /.position-relative -->
-
-    </section><!-- /.products-carousel container -->
+      </div>
+    </section>
   </main>
 
 @endsection

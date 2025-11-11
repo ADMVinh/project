@@ -179,15 +179,39 @@
                                                 <td class="pname">
                                                     <div class="image">
                                                         <img src="{{ asset('uploads/products/thumbnails') }}/{{ $item->product->image }}"
-                                                            alt="{{ $item->product->name }}" class="image">
+                                                             alt="{{ $item->product->name }}" class="image">
                                                     </div>
                                                     <div class="name">
                                                         <a href="{{ route('shop.products.details', ['product_slug' => $item->product->slug]) }}"
-                                                            target="_blank"
-                                                            class="body-title-2">{{ $item->product->name }}</a>
+                                                           target="_blank" class="body-title-2">
+                                                           {{ $item->product->name }}
+                                                        </a>
+                                                
+                                                        <!-- Thêm vào phần hiển thị từng sản phẩm trong đơn hàng -->
+                                                        <div class="d-flex align-items-center gap-3 mt-2">
+                                                            @if($order->status == 'delivered')
+                                                                @php
+                                                                    $hasReview = \App\Models\Review::where('order_item_id', $item->id)
+                                                                        ->where('user_id', Auth::id())
+                                                                        ->exists();
+                                                                @endphp
+                                                                
+                                                                @if(!$hasReview)
+                                                                    <a href="{{ route('user.review.product', $item->id) }}" 
+                                                                       class="btn btn-sm btn-primary">
+                                                                        <i class="fa fa-star"></i> Đánh giá
+                                                                    </a>
+                                                                @else
+                                                                    <span class="badge bg-success">
+                                                                        <i class="fa fa-check"></i> Đã đánh giá
+                                                                    </span>
+                                                                @endif
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </td>
-                                                <td class="text-center">${{ $item->price }}</td>
+                                                
+                                                <td class="text-center">{{formatVND( $item->price) }}</td>
                                                 <td class="text-center">{{ $item->quantity }}</td>
                                                 <td class="text-center">{{ $item->product->SKU }}</td>
                                                 <td class="text-center">{{ $item->product->category->name }}</td>
@@ -235,15 +259,15 @@
                                 <tbody>
                                     <tr>
                                         <th>Tạm Tính</th>
-                                        <td>${{ $order->subtotal }}</td>
+                                        <td>{{formatVND( $order->subtotal) }}</td>
                                         <th>Thuế</th>
-                                        <td>${{ $order->tax }}</td>
+                                        <td>{{formatVND( $order->tax) }}</td>
                                         <th>Giảm Giá</th>
-                                        <td>${{ $order->discount }}</td>
+                                        <td>{{formatVND( $order->discount) }}</td>
                                     </tr>
                                     <tr>
                                         <th>Tổng Cộng</th>
-                                        <td>${{ $order->total }}</td>
+                                        <td>{{formatVND( $order->total) }}</td>
                                         <th>Hình Thức Thanh Toán</th>
                                         <td>{{ $transaction ? $transaction->mode : 'Không Có' }}</td>
                                         <th>Trạng Thái</th>

@@ -1,5 +1,105 @@
 @extends('layouts.app')
 @section('content')
+
+<style>
+  .order-complete__message {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  
+  .order-complete__message svg {
+    margin-bottom: 20px;
+  }
+  
+  .order-complete__message h3 {
+    color: #B9A16B;
+    font-size: 1.8em;
+    margin-bottom: 10px;
+  }
+  
+  .order-complete__message p {
+    font-size: 1.1em;
+    color: #666;
+  }
+  
+  .order-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 8px;
+    margin: 30px 0;
+  }
+  
+  .order-info__item {
+    text-align: center;
+  }
+  
+  .order-info__item label {
+    display: block;
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  
+  .order-info__item span {
+    display: block;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #000;
+  }
+  
+  .checkout-cart-items thead th {
+    background: #f8f9fa;
+    padding: 15px;
+    font-weight: 600;
+  }
+  
+  .checkout-cart-items tbody td {
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .checkout-totals tbody tr {
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .checkout-totals tbody tr th,
+  .checkout-totals tbody tr td {
+    padding: 12px 15px;
+  }
+  
+  .checkout-totals tbody tr.order-total-row {
+    border-top: 2px solid #dee2e6;
+  }
+  
+  .checkout-totals tbody tr.order-total-row th,
+  .checkout-totals tbody tr.order-total-row td {
+    padding-top: 20px;
+    font-size: 1.2em;
+  }
+  
+  .text-danger {
+    color: #dc3545 !important;
+  }
+  
+  .text-primary {
+    color: #0d6efd !important;
+  }
+  
+  .fw-bold {
+    font-weight: 700 !important;
+  }
+  
+  .fs-5 {
+    font-size: 1.25rem !important;
+  }
+</style>
+
+<main class="pt-90">
 <main class="pt-90">
     <div class="mb-4 pb-4"></div>
     <section class="shop-checkout container">
@@ -49,7 +149,7 @@
           </div>
           <div class="order-info__item">
             <label>Tổng Tiền</label>
-            <span>${{$order->total}}</span>
+            <span>{{formatVND($order->total)}}</span>
           </div>
           <div class="order-info__item">
             <label>Phương Thức Thanh Toán</label>
@@ -73,7 +173,7 @@
                    {{$item->product->name}} x {{$item->quantity}}
                   </td>
                   <td>
-                    ${{$item->price}}
+                    {{formatVND($item->price * $item->quantity)}}
                   </td>
                 </tr>
                 @endforeach
@@ -83,23 +183,25 @@
               <tbody>
                 <tr>
                   <th>TỔNG CỘNG</th>
-                  <td>${{$order->subtotal}}</td>
+                  <td>{{formatVND($order->subtotal)}}</td>
                 </tr>
+                @if($order->discount > 0)
                 <tr>
                     <th>GIẢM GIÁ</th>
-                    <td>${{$order->discount}}</td>
+                    <td class="text-danger fw-bold">-{{formatVND($order->discount)}}</td>
                 </tr>
+                @endif
                 <tr>
                   <th>VẬN CHUYỂN</th>
                   <td>Miễn phí vận chuyển</td>
                 </tr>
                 <tr>
                   <th>VAT</th>
-                  <td>${{$order->tax}}</td>
+                  <td>{{formatVND($order->tax)}}</td>
                 </tr>
-                <tr>
+                <tr class="order-total-row">
                   <th>TỔNG TIỀN</th>
-                  <td>${{$order->total}}</td>
+                  <td class="fw-bold text-primary fs-5">{{formatVND($order->total)}}</td>
                 </tr>
               </tbody>
             </table>

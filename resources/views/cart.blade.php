@@ -67,7 +67,7 @@
                   </div>
                 </td>
                 <td>
-                  <span class="shopping-cart__product-price">${{$item->price}}</span>
+                  <span class="shopping-cart__product-price">{{formatVND($item->price)}}</span>
                 </td>
                 <td>
                   <div class="qty-control position-relative">
@@ -77,7 +77,7 @@
                       @method('PUT')
                       <div class="qty-control__reduce">-</div>
                     </form>
-
+                
                     <form method="POST" action="{{route('cart.qty.increase',['rowId'=>$item->rowId])}}">
                       @csrf
                       @method('PUT')
@@ -86,7 +86,7 @@
                   </div>
                 </td>
                 <td>
-                  <span class="shopping-cart__subtotal">${{$item->subTotal()}}</span>
+                  <span class="shopping-cart__subtotal fw-bold">{{formatVND($item->subTotal())}}</span>
                 </td>
                 <td>
                   <form method="POST" action="{{route('cart.item.remove',['rowId'=>$item->rowId])}}">
@@ -140,56 +140,56 @@
             <div class="shopping-cart__totals">
               <h3>Tổng Giỏ Hàng</h3>
               @if(Session::has('discounts'))
-              <table class="cart-totals">
-                <tbody>
-                  <tr>
-                    <th>Tạm Tính</th>
-                    <td>${{Cart::instance('cart')->subtotal()}}</td>
-                  </tr>
-                  <tr>
-                    <th>Giảm Giá - {{Session::get('coupon')['code']}}</th>
-                    <td>${{Session::get('discounts')['discount']}}</td>
-                  </tr>
-                  <tr>
-                    <th>Tạm Tính Sau Giảm Giá</th>
-                    <td>${{Session::get('discounts')['subtotal']}}</td>
-                  </tr>
-                  <tr>
-                    <th>Vận Chuyển</th>
-                    <td>Miễn phí</td>
-                  </tr>
-                  <tr>
-                    <th>VAT</th>
-                    <td>${{Session::get('discounts')['tax']}}</td>
-                  </tr>
-                  <tr>
-                    <th>Tổng</th>
-                    <td>${{Session::get('discounts')['total']}}</td>
-                  </tr>
-                </tbody>
-              </table>
-              @else
-              <table class="cart-totals">
-                <tbody>
-                  <tr>
-                    <th>Tạm Tính</th>
-                    <td>${{Cart::instance('cart')->subtotal()}}</td>
-                  </tr>
-                  <tr>
-                    <th>Vận Chuyển</th>
-                    <td>Miễn phí</td>
-                  </tr>
-                  <tr>
-                    <th>VAT</th>
-                    <td>${{Cart::instance('cart')->tax()}}</td>
-                  </tr>
-                  <tr>
-                    <th>Tổng</th>
-                    <td>${{Cart::instance('cart')->total()}}</td>
-                  </tr>
-                </tbody>
-              </table>
-              @endif
+                <table class="cart-totals">
+                  <tbody>
+                    <tr>
+                      <th>Tạm Tính</th>
+                      <td>{{formatVND(Cart::instance('cart')->subtotal())}}</td>
+                    </tr>
+                    <tr>
+                      <th>Giảm Giá - {{Session::get('coupon')['code']}}</th>
+                      <td class="text-danger fw-bold">-{{formatVND(Session::get('discounts')['discount'])}}</td>
+                    </tr>
+                    <tr>
+                      <th>Tạm Tính Sau Giảm Giá</th>
+                      <td>{{formatVND(Session::get('discounts')['subtotal'])}}</td>
+                    </tr>
+                    <tr>
+                      <th>Vận Chuyển</th>
+                      <td>Miễn phí</td>
+                    </tr>
+                    <tr>
+                      <th>VAT</th>
+                      <td>{{formatVND(Session::get('discounts')['tax'])}}</td>
+                    </tr>
+                    <tr class="cart-totals__total">
+                      <th>Tổng</th>
+                      <td class="fw-bold text-primary fs-5">{{formatVND(Session::get('discounts')['total'])}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                @else
+                <table class="cart-totals">
+                  <tbody>
+                    <tr>
+                      <th>Tạm Tính</th>
+                      <td>{{formatVND(Cart::instance('cart')->subtotal())}}</td>
+                    </tr>
+                    <tr>
+                      <th>Vận Chuyển</th>
+                      <td>Miễn phí</td>
+                    </tr>
+                    <tr>
+                      <th>VAT</th>
+                      <td>{{formatVND(Cart::instance('cart')->tax())}}</td>
+                    </tr>
+                    <tr class="cart-totals__total">
+                      <th>Tổng</th>
+                      <td class="fw-bold text-primary fs-5">{{formatVND(Cart::instance('cart')->total())}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                @endif
             </div>
             <div class="mobile_fixed-btn_wrapper">
               <div class="button-wrapper container">

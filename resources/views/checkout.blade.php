@@ -5,6 +5,86 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  .shipping-address-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: #fff;
+    margin-top: 20px;
+  }
+
+  .shipping-address-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+  }
+
+  .shipping-address-header h5 {
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    margin: 0;
+  }
+
+  .shipping-address-header i {
+    font-size: 20px;
+    margin-right: 10px;
+  }
+
+  .shipping-address-body {
+    padding: 25px;
+  }
+
+  .address-info-row {
+    display: flex;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+
+  .address-info-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .info-label {
+    display: flex;
+    align-items: center;
+    min-width: 150px;
+    font-weight: 600;
+    color: #555;
+    gap: 10px;
+  }
+
+  .info-label i {
+    width: 20px;
+    color: #667eea;
+    font-size: 16px;
+  }
+
+  .info-value {
+    flex: 1;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  .address-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+    margin: 20px 0;
+  }
+
+  @media (max-width: 768px) {
+    .address-info-row {
+      flex-direction: column;
+    }
+    
+    .info-label {
+      margin-bottom: 5px;
+      min-width: auto;
+    }
+  }
 </style>
 
 <main class="pt-90">
@@ -48,16 +128,78 @@
             @if($address)
              <div class="row">
                 <div class="col-md-12">
-                    <div class="my-account_address-list">
-                        <div class="my-account_address-list-item">
-                            <div class="my-account_address-item_detail">
-                                <p>{{$address->name}}</p>
-                                <p>{{$address->address}}</p>
-                                <p>{{$address->landmark}}</p>
-                                <p>{{$address->city}}, {{$address->state}}, {{$address->country}}</p>
-                                <p>{{$address->zip}}, {{$address->locality}}</p>
-                                <br />
-                                <p>{{$address->phone}}</p>
+                    <div class="shipping-address-card">
+                        <div class="shipping-address-header">
+                            <h5>
+                                <i class="fas fa-map-marker-alt"></i>
+                                Địa chỉ giao hàng
+                            </h5>
+                        </div>
+                        <div class="shipping-address-body">
+                            <div class="address-info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-user"></i>
+                                    <span>Người nhận:</span>
+                                </div>
+                                <div class="info-value">{{$address->name}}</div>
+                            </div>
+                            
+                            <div class="address-info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-phone"></i>
+                                    <span>Số điện thoại:</span>
+                                </div>
+                                <div class="info-value">{{$address->phone}}</div>
+                            </div>
+                            
+                            <div class="address-divider"></div>
+                            
+                            <div class="address-info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-home"></i>
+                                    <span>Địa chỉ:</span>
+                                </div>
+                                <div class="info-value">{{$address->address}}</div>
+                            </div>
+                            
+                            <div class="address-info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-road"></i>
+                                    <span>Khu vực:</span>
+                                </div>
+                                <div class="info-value">{{$address->locality}}</div>
+                            </div>
+                            
+                            <div class="address-info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-landmark"></i>
+                                    <span>Điểm mốc:</span>
+                                </div>
+                                <div class="info-value">{{$address->landmark}}</div>
+                            </div>
+                            
+                            <div class="address-info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-city"></i>
+                                    <span>Thành phố:</span>
+                                </div>
+                                <div class="info-value">{{$address->city}}, {{$address->state}}</div>
+                            </div>
+                            
+                            <div class="address-info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-mail-bulk"></i>
+                                    <span>Mã bưu chính:</span>
+                                </div>
+                                <div class="info-value">{{$address->zip}}</div>
+                            </div>
+                            
+                            <div class="address-info-row">
+                                <div class="info-label">
+                                    <i class="fas fa-globe"></i>
+                                    <span>Quốc gia:</span>
+                                </div>
+                                <div class="info-value">{{$address->country}}</div>
                             </div>
                         </div>
                     </div>
@@ -149,7 +291,7 @@
                         {{$item->name}} x {{$item->qty}}
                       </td>
                       <td align="right">
-                        ${{$item->subtotal()}}
+                        {{formatVND($item->subtotal())}}
                       </td>
                     </tr>                   
                     @endforeach
@@ -160,15 +302,15 @@
                     <tbody>
                         <tr>
                           <th>Tổng phụ</th>
-                          <td class="text_right">${{Cart::instance('cart')->subtotal()}}</td>
+                          <td class="text_right">{{formatVND(Cart::instance('cart')->subtotal())}}</td>
                         </tr>
                         <tr>
                           <th>Giảm giá {{Session::get('coupon')['code']}}</th>
-                          <td class="text_right">${{Session::get('discounts')['discount']}}</td>
+                          <td class="text_right text-danger">-{{formatVND(Session::get('discounts')['discount'])}}</td>
                         </tr>
                         <tr>
                           <th>Tổng phụ sau giảm giá</th>
-                          <td class="text_right">${{Session::get('discounts')['subtotal']}}</td>
+                          <td class="text_right">{{formatVND(Session::get('discounts')['subtotal'])}}</td>
                         </tr>
                         <tr>
                           <th>Vận chuyển</th>
@@ -176,36 +318,36 @@
                         </tr>
                         <tr>
                           <th>VAT</th>
-                          <td class="text_right">${{Session::get('discounts')['tax']}}</td>
+                          <td class="text_right">{{formatVND(Session::get('discounts')['tax'])}}</td>
                         </tr>
                         <tr>
                           <th>Tổng cộng</th>
-                          <td class="text_right">${{Session::get('discounts')['total']}}</td>
+                          <td class="text_right fw-bold text-primary">{{formatVND(Session::get('discounts')['total'])}}</td>
                         </tr>
                       </tbody>
                   </table>
-                @else
-                <table class="checkout-totals">
-                  <tbody>
-                    <tr>
-                      <th>TỔNG CỘNG</th>
-                      <td class="text_right">${{Cart::instance('cart')->subtotal()}}</td>
-                    </tr>
-                    <tr>
-                      <th>VẬN CHUYỂN</th>
-                      <td class="text_right">Miễn phí vận chuyển</td>
-                    </tr>
-                    <tr>
-                      <th>VAT</th>
-                      <td class="text_right">${{Cart::instance('cart')->tax()}}</td>
-                    </tr>
-                    <tr>
-                      <th>TỔNG</th>
-                      <td class="text_right">${{Cart::instance('cart')->total()}}</td>
-                    </tr>
-                  </tbody>
-                </table>
-                @endif
+                  @else
+                  <table class="checkout-totals">
+                    <tbody>
+                      <tr>
+                        <th>TỔNG CỘNG</th>
+                        <td class="text_right">{{formatVND(Cart::instance('cart')->subtotal())}}</td>
+                      </tr>
+                      <tr>
+                        <th>VẬN CHUYỂN</th>
+                        <td class="text_right">Miễn phí vận chuyển</td>
+                      </tr>
+                      <tr>
+                        <th>VAT</th>
+                        <td class="text_right">{{formatVND(Cart::instance('cart')->tax())}}</td>
+                      </tr>
+                      <tr>
+                        <th>TỔNG</th>
+                        <td class="text_right fw-bold text-primary">{{formatVND(Cart::instance('cart')->total())}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  @endif
               </div>
               <div class="checkout__payment-methods">
                 <div class="form-check">

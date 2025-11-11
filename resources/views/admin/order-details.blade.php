@@ -102,7 +102,7 @@
                                                 target="_blank" class="body-title-2">{{ $item->product->name }}</a>
                                         </div>
                                     </td>
-                                    <td class="text-center">${{ $item->price }}</td>
+                                    <td class="text-center">{{formatVND($item->price) }}</td>
                                     <td class="text-center">{{ $item->quantity }}</td>
                                     <td class="text-center">{{ $item->product->SKU }}</td>
                                     <td class="text-center">{{ $item->product->category->name }}</td>
@@ -150,15 +150,15 @@
                     <tbody>
                         <tr>
                             <th>Tổng phụ</th>
-                            <td>${{ $order->subtotal }}</td>
+                            <td>{{formatVND( $order->subtotal) }}</td>
                             <th>Thuế</th>
-                            <td>${{ $order->tax }}</td>
+                            <td>{{formatVND( $order->tax) }}</td>
                             <th>Giảm giá</th>
-                            <td>${{ $order->discount }}</td>
+                            <td>{{formatVND( $order->discount) }}</td>
                         </tr>
                         <tr>
                             <th>Tổng cộng</th>
-                            <td>${{ $order->total }}</td>
+                            <td>{{formatVND( $order->total) }}</td>
                             <th>Phương thức thanh toán</th>
                             <td>{{ $transaction ? $transaction->mode : 'N/A' }}</td>
                             <th>Trạng thái</th>

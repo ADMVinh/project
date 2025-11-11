@@ -61,8 +61,22 @@ class ShopController extends Controller
 
     public function product_details($product_slug)
     {
-        $product = Product::where('slug', $product_slug)->first();
-        $lproducts = Product::where(`slug`,`<>`, $product_slug)->get()->take(8);
-        return view('details',compact('product', 'lproducts'));
+        $product = Product::where('slug', $product_slug)
+            ->with([
+                'approvedReviews' => function($query) {
+                    $query->orderBy('created_at', 'DESC')->take(10);
+                },
+                'approvedReviews.user',
+                'approvedReviews.replies.user'
+            ])
+            ->firstOrFail();
+        
+        $rproducts = Product::where('slug', '<>', $product_slug)
+            ->where('category_id', $product->category_id)
+            ->inRandomOrder()
+            ->take(8)
+            ->get();
+        
+        return view('details', compact('product', 'rproducts'));
     }
 }

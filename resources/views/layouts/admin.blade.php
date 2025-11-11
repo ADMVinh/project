@@ -153,12 +153,39 @@
                                     </a>
                                 </li>
 
-                                <li class="menu-item">
-                                    <a href="users.html" class="">
+                                
+
+                                <li class="menu-item has-children">
+                                    <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-user"></i></div>
                                         <div class="text">Người dùng</div>
                                     </a>
+                                    <ul class="sub-menu">
+                                        <li class="sub-menu-item">
+                                            <a href="{{route('admin.user.add')}}" class="">
+                                                <div class="text">Thêm người dùng</div>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <ul class="sub-menu">
+                                        <li class="sub-menu-item">
+                                            <a href="{{route('admin.users')}}" class="">
+                                                <div class="text">Người dùng</div>
+                                            </a>
+                                        </li>
+                                    </ul>
+
                                 </li>
+
+
+                                <li class="menu-item">
+                                    <a href="{{route('admin.reviews')}}" class="">
+                                        <div class="icon"><i class="icon-star"></i></div>
+                                        <div class="text">Đánh giá</div>
+                                    </a>
+                                </li>
+
+
 
                                 <li class="menu-item">
                                     <a href="settings.html" class="">
@@ -395,24 +422,32 @@
 
 
 
+                                {{-- Thay thế phần dropdown user trong layouts/admin.blade.php --}}
+
                                 <div class="popup-wrap user type-header">
                                     <div class="dropdown">
                                         <button class="btn btn-secondary dropdown-toggle" type="button"
                                             id="dropdownMenuButton3" data-bs-toggle="dropdown" aria-expanded="false">
                                             <span class="header-user wg-user">
                                                 <span class="image">
-                                                    <img src="images/avatar/user-1.png" alt="">
+                                                    <img src="{{ asset('images/avatar/user-1.png') }}" alt="{{ Auth::user()->name }}">
                                                 </span>
                                                 <span class="flex flex-column">
-                                                    <span class="body-title mb-2">Kristin Watson</span>
-                                                    <span class="text-tiny">Quản trị viên</span>
+                                                    <span class="body-title mb-2">{{ Auth::user()->name }}</span>
+                                                    <span class="text-tiny">
+                                                        @if(Auth::user()->utype == 'ADM')
+                                                            Quản trị viên
+                                                        @else
+                                                            Người dùng
+                                                        @endif
+                                                    </span>
                                                 </span>
                                             </span>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end has-content"
                                             aria-labelledby="dropdownMenuButton3">
                                             <li>
-                                                <a href="#" class="user-item">
+                                                <a href="{{ route('admin.user.details', Auth::id()) }}" class="user-item">
                                                     <div class="icon">
                                                         <i class="icon-user"></i>
                                                     </div>
@@ -420,20 +455,28 @@
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="#" class="user-item">
+                                                <a href="{{ route('admin.orders') }}" class="user-item">
                                                     <div class="icon">
-                                                        <i class="icon-mail"></i>
+                                                        <i class="icon-shopping-bag"></i>
                                                     </div>
-                                                    <div class="body-title-2">Hộp thư đến</div>
-                                                    <div class="number">27</div>
+                                                    <div class="body-title-2">Đơn hàng</div>
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="#" class="user-item">
+                                                <a href="{{ route('admin.users') }}" class="user-item">
                                                     <div class="icon">
-                                                        <i class="icon-file-text"></i>
+                                                        <i class="icon-users"></i>
                                                     </div>
-                                                    <div class="body-title-2">Bảng tác vụ</div>
+                                                    <div class="body-title-2">Quản lý người dùng</div>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ route('admin.contacts') }}" class="user-item">
+                                                    <div class="icon">
+                                                        <i class="icon-mail"></i>
+                                                    </div>
+                                                    <div class="body-title-2">Tin nhắn</div>
+                                                    <div class="number">27</div>
                                                 </a>
                                             </li>
                                             <li>
@@ -445,7 +488,11 @@
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="login.html" class="user-item">
+                                                <form method="POST" action="{{ route('logout') }}" id="logout-form-header">
+                                                    @csrf
+                                                </form>
+                                                <a href="{{ route('logout') }}" class="user-item" 
+                                                onclick="event.preventDefault(); document.getElementById('logout-form-header').submit();">
                                                     <div class="icon">
                                                         <i class="icon-log-out"></i>
                                                     </div>
